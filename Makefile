@@ -1,64 +1,53 @@
 # This makefile is defined to give you the following targets:
 #
-#    default: The default target: Compiles $(PROG) and whatever it 
-#	   depends on.
-#    style: Run our style checker on the project source files.  Requires that
-#           the source files compile.
-#    check: Compile $(PROG), if needed, and then for each file, F.in, in
-#	   directory testing, use F.in as input to "java $(MAIN_CLASS)" and
-#          compare the output to the contents of the file names F.out.
-#          Report discrepencies.
+#    default: Same as check
+#    check: For each file, F-1.in, use F-1.in and if it exists, 
+#           F-2.in as arguments to test-amazons.  This will produce files
+#           F-1.out (and F-2.out, if F-2.in is present); compare them to
+#           to F-1.std (and F-2.std) and report discrepencies.
 #    clean: Remove all the .class files produced by java compilation, 
 #          all Emacs backup files, and testing output files.
+#    outputs: Create .std files from current application and .in files.
 #
-# In other words, type 'make' to compile everything; 'gmake check' to 
-# compile and test everything, and 'make clean' to clean things up.
-# 
 # You can use this file without understanding most of it, of course, but
 # I strongly recommend that you try to figure it out, and where you cannot,
 # that you ask questions.  The Lab Reader contains documentation.
 
-STYLEPROG = style61b
+SHELL = /bin/bash
 
-JFLAGS = -g -Xlint:unchecked -Xlint:deprecation
+PYTHON = python3
 
-CLASSDIR = ../classes
+# Flags to Java interpreter: check assertions
+JFLAGS = -ea
 
-# A CLASSPATH value that (seems) to work on both Windows and Unix systems.
-# To Unix, it looks like ..:$(CLASSPATH):JUNK and to Windows like
-# JUNK;..;$(CLASSPATH).
-CPATH = "..:$(CLASSPATH):;..;$(CLASSPATH)"
+# Name of class containing main procedure 
+MAIN = amazons.Main
 
-# All .java files in this directory.
-SRCS := $(wildcard *.java)
+TESTER_FLAGS = --show=-1
 
-.PHONY: default check clean style unit
+TESTS := *-1.in
 
-# As a convenience, you can compile a single Java file X.java in this directory
-# with 'make X.class'
-%.class: %.java
-	javac $(JFLAGS) -cp $(CPATH) $<
+.PHONY: default check clean outputs
 
 # First, and therefore default, target.
-default: sentinel
+default:
+	$(MAKE) -C .. 
+	$(MAKE) check
 
-style: default
-	$(STYLEPROG) $(SRCS) 
+# A non-standard classpath that works Linux, Mac, and Windows.
+# We include everything in CLASSPATH, plus the proj2 directory itself
+# (from which one should be able to find the amazons classes).
+CPATH = "..:$(CLASSPATH):;..;$(CLASSPATH)"
 
-check: unit integration
-
-unit: default
-	java -ea -cp $(CPATH) amazons.UnitTest
-
-integration:
-	$(MAKE) -C ../testing check
+# 'make check' will run the tests in the testing directory.
+# For each .in file, it runs test-amazons, which is described in the
+# project specification. The "CLASSPATH=..." clause in front of 
+# the command below temporarily changes the location in which Java searches
+# for classes to be the directory that contains your project.
+check: 
+	@echo "Testing application $(MAIN)..."
+	@CLASSPATH=$(CPATH) $(PYTHON) tester.py $(TESTER_FLAGS) $(TESTS)
 
 # 'make clean' will clean up stuff you can reconstruct.
 clean:
-	$(RM) *~ *.class sentinel
-
-### DEPENDENCIES ###
-
-sentinel: $(SRCS)
-	javac $(JFLAGS) -cp $(CPATH) $(SRCS)
-	touch sentinel
+	$(RM) -r *~ *.out *.err __pycache__
