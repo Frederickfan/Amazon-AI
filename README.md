@@ -1,3 +1,1 @@
-# Amazon-AI
-This programming assignment is to develop an Enigma machine that Germany navy used during World War II to encrypt its military communications. The Enigmas contains couple rotors and used a progressive substitution cipher on letters of message to perform a one-to-one permutation for each rotor. 
-
+The fundamentals to dynamic data structures, including linear lists, queues, trees, and other linked structures; arrays strings, and hash tables. Storage management. Elementary principles of software engineering. Abstract data types. Algorithms for sorting and searching. Introduction to the Java programming language.
